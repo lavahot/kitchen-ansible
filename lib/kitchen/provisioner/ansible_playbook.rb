@@ -723,6 +723,10 @@ module Kitchen
         end
       end
 
+      def collections
+        config[:collections_path]
+      end
+
       def modules
         config[:modules_path]
       end
@@ -1072,7 +1076,11 @@ module Kitchen
 
       def prepare_collections
         info('Preparing collections')
-        debug("Using collections from #{File.expand_path(collections)}")
+        if collections.nil?
+          debug('No collections_path detected. If you require one, please specify one in .kitchen.yml')
+        else
+          debug("Using collections from #{File.expand_path(collections)}")
+        end
 
         # resolve_with_librarian if File.exist?(ansiblefile)
 

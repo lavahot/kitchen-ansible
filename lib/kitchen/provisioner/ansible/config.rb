@@ -94,15 +94,19 @@ module Kitchen
         default_config :ansible_cfg_overwrite, true
         default_config :galaxy_ignore_certs, false
         default_config :keep_playbook_path, false
-
+        
         default_config :playbook do |provisioner|
           provisioner.calculate_path('default.yml', :file) ||
-            fail('No playbook found or specified!  Please either set a playbook in your .kitchen.yml config, or create a default playbook in test/integration/<suite_name>/ansible/default.yml, test/integration/<suite_name>/default.yml, test/integration/default.yml or in default.yml in the top level')
+          fail('No playbook found or specified!  Please either set a playbook in your .kitchen.yml config, or create a default playbook in test/integration/<suite_name>/ansible/default.yml, test/integration/<suite_name>/default.yml, test/integration/default.yml or in default.yml in the top level')
         end
-
+        
         default_config :roles_path do |provisioner|
           provisioner.calculate_path('roles') ||
-            fail('No roles_path detected. Please specify one in .kitchen.yml')
+          fail('No roles_path detected. Please specify one in .kitchen.yml')
+        end
+        
+        default_config :collections_path do |provisioner|
+          provisioner.calculate_path('collections') || nil
         end
 
         default_config :ansible_binary_path do |provisioner|
