@@ -245,11 +245,14 @@ problematic with files with links.
 ### additional_copy_role_path
 This is the same as additional_copy_path but adds the extra paths to the ANSIBLE_ROLES_PATH ansible command parameter.
 
+### additional_copy_collection_path
+This is the same as additional_copy_path but adds the extra paths to the ANSIBLE_COLLECTIONS_PATH ansible command parameter.
+
 ### ignore_paths_from_root and ignore_extensions_from_root
-During recursive_additional_copy_path or additional_copy_role_path there are 2 additional parameters.
+During recursive_additional_copy_path, additional_copy_role_path, or additional_copy_collection_path there are 2 additional parameters.
 (NOTE: These don't apply with additional_copy_path)
 * ignore_paths_from_root defaults to empty array []. This causes these paths to be ignored.
-* ignore_extensions_from_root defaults to an array containg ['.pyc']. This causes files with these extensions to be ignored.
+* ignore_extensions_from_root defaults to an array containing ['.pyc']. This causes files with these extensions to be ignored.
 as these are implemented with the 'Find.prune' command they can be problematic with file links.
 
 

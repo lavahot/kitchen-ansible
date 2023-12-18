@@ -285,6 +285,7 @@ module Kitchen
         prepare_inventory
         prepare_modules
         prepare_roles
+        prepare_collections
         prepare_ansible_cfg
         prepare_group_vars
         prepare_additional_copy_path
@@ -408,6 +409,7 @@ module Kitchen
         cmd = "HTTP_PROXY=#{http_proxy} #{cmd}" if http_proxy
         cmd = "NO_PROXY=#{no_proxy} #{cmd}" if no_proxy
         cmd = "ANSIBLE_ROLES_PATH=#{ansible_roles_path} #{cmd}" if ansible_roles_path
+        cmd = "ANSIBLE_COLLECTIONS_PATH=#{ansible_collections_path} #{cmd}" if ansible_collections_path"
         cmd = "ANSIBLE_HOST_KEY_CHECKING=false #{cmd}" if !ansible_host_key_checking
 
         cmd = "#{cd_ansible} #{cmd}" if !config[:ansible_sudo].nil? && !config[:ansible_sudo]
@@ -472,7 +474,7 @@ module Kitchen
             'ansible-galaxy', 'install', '--force',
             galaxy_cert_ignore,
             '-p', File.join(config[:root_path], 'roles'),
-            '-r', File.join(config[:root_path], galaxy_requirements)
+            '-r', File.join(config[:root_path], File.basename(galaxy_requirements))
         ].join(' ')
         cmd = "https_proxy=#{https_proxy} #{cmd}" if https_proxy
         cmd = "http_proxy=#{http_proxy} #{cmd}" if http_proxy
@@ -485,7 +487,7 @@ module Kitchen
           'ansible-galaxy', 'collection', 'install', '--force',
           galaxy_cert_ignore,
           '-p', File.join(config[:root_path], 'collections'),
-          '-r', File.join(config[:root_path], galaxy_requirements_collections)
+          '-r', File.join(config[:root_path], File.basename(galaxy_requirements_collections))
         ].join(' ')
         cmd = "https_proxy=#{https_proxy} #{cmd}" if https_proxy
         cmd = "http_proxy=#{http_proxy} #{cmd}" if http_proxy
@@ -1013,7 +1015,7 @@ module Kitchen
         resolve_with_librarian if File.exist?(ansiblefile)
 
         if galaxy_requirements
-          dest = File.join(sandbox_path, galaxy_requirements)
+          dest = File.join(sandbox_path, File.basename(galaxy_requirements))
           FileUtils.mkdir_p(File.dirname(dest))
           FileUtils.cp(File.expand_path(galaxy_requirements), dest)
         end
@@ -1051,6 +1053,61 @@ module Kitchen
             FileUtils.cp(source, target)
           end
         end
+      end
+
+      def ansible_collections_path
+        collections_paths = []
+        collections_paths << File.join(config[:root_path], 'collections') unless config[:collections_path].nil?
+        Array(config[:additional_copy_collection_path]).each do |path|
+          collections_paths << File.join(config[:root_path], 'collections', File.basename(File.expand_path(path)))
+        end
+        if collections_paths.empty?
+          info('No collections have been set.')
+          nil
+        else
+          debug("Setting collections_path inside VM to #{ collections_paths.join(':') }")
+          collections_paths.join(':')
+        end
+      end
+
+      def prepare_collections
+        info('Preparing collections')
+        debug("Using collections from #{File.expand_path(collections)}")
+
+        # resolve_with_librarian if File.exist?(ansiblefile)
+
+        if galaxy_requirements_collections
+          dest = File.join(sandbox_path, File.basename(galaxy_requirements_collections))
+          FileUtils.mkdir_p(File.dirname(dest))
+          FileUtils.cp(File.expand_path(galaxy_requirements_collections), dest)
+        end
+
+        paths = Array(config[:additional_copy_collection_path])
+        paths.each do |path|
+          debug("Using additional collections copy from #{File.expand_path(path)}")
+          dest = File.join(sandbox_path, 'collections', File.basename(File.expand_path(path)))
+          FileUtils.mkdir_p(File.dirname(dest))
+          FileUtils.cp_r(File.expand_path(path), dest)
+        end
+
+        # FileUtils.mkdir_p(File.join(tmp_collections_dir, collection_name))
+        # Find.find(collections) do |source|
+        #   # Detect whether we are running tests on a collection
+        #   # If so, make sure to copy into VM so dir structure is like: /tmp/kitchen/collections/collection_name
+        #   collection_path = source.sub(/#{collections}|\/collections/, '')
+        #   unless collections =~ /\/collections$/
+        #     collection_path = "#{collection_name}/#{collection_path}"
+        #   end
+        #   target = File.join(tmp_collections_dir, collection_path)
+
+        #   Find.prune if config[:ignore_paths_from_root].include? File.basename(source)
+        #   Find.prune if config[:ignore_extensions_from_root].include? File.extname(source)
+        #   if File.directory?(source)
+        #     FileUtils.mkdir_p(target)
+        #   else
+        #     FileUtils.cp(source, target)
+        #   end
+        # end
       end
 
       # copy ansible.cfg if found and ansible_cfg_overwrite is set to true
