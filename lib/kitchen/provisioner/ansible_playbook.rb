@@ -409,7 +409,7 @@ module Kitchen
         cmd = "HTTP_PROXY=#{http_proxy} #{cmd}" if http_proxy
         cmd = "NO_PROXY=#{no_proxy} #{cmd}" if no_proxy
         cmd = "ANSIBLE_ROLES_PATH=#{ansible_roles_path} #{cmd}" if ansible_roles_path
-        cmd = "ANSIBLE_COLLECTIONS_PATH=#{ansible_collections_path} #{cmd}" if ansible_collections_path"
+        cmd = "ANSIBLE_COLLECTIONS_PATH=#{ansible_collections_path} #{cmd}" if ansible_collections_path
         cmd = "ANSIBLE_HOST_KEY_CHECKING=false #{cmd}" if !ansible_host_key_checking
 
         cmd = "#{cd_ansible} #{cmd}" if !config[:ansible_sudo].nil? && !config[:ansible_sudo]
