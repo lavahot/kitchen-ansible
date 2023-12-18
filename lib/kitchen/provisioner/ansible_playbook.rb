@@ -377,7 +377,7 @@ module Kitchen
         end
 
         if galaxy_requirements_collections
-          commands << ansible_galacy_collection_command
+          commands << ansible_galaxy_collection_command
         end
 
         if kerberos_conf_file
@@ -480,7 +480,7 @@ module Kitchen
         cmd
       end
 
-      def ansible_galacy_collection_command
+      def ansible_galaxy_collection_command
         cmd = [
           'ansible-galaxy', 'collection', 'install', '--force',
           galaxy_cert_ignore,
